@@ -14,7 +14,7 @@
 #define MSG_MAX_SIZE 350
 #define BUFFER_SIZE (MSG_MAX_SIZE + 100)
 #define LOGIN_MAX_SIZE 13
-#define MAX_CLIENTS 3
+#define MAX_CLIENTS 4
 //Ainda falta criar acenario e as bibliotecas Jogador e Info_Inimigo Info_payer
 //Ainda falta a parte da diagonal
 //e parimoraar o jogo caso vcs queiram
@@ -27,7 +27,7 @@ enum estado_do_server
   FIM_DE_JOGO
 };
 
-void cair(char cenario[][], Jogador jogadores[], msg_recebida recebido, char *Mudanca)
+void cair(char cenario[][224], Jogador jogadores[], msg_recebida recebido, char *Mudanca)
 { //gravidade que nao sei fazer porem tentei
   while (cenario[jogadores[recebido.client_id].posY++][jogadores[recebido.client_id].posX] == 0 && recebido.status == NO_MESSAGE)
   {
@@ -35,7 +35,7 @@ void cair(char cenario[][], Jogador jogadores[], msg_recebida recebido, char *Mu
     broadcast((Jogador *)&jogadores[recebido.client_id], sizeof(Jogador));
     recebido = recvMsg(Mudanca);
   }
-  recebido = recvMsg(Mudanca);
+  //recebido = recvMsg(Mudanca);
   while (cenario[jogadores[recebido.client_id].posY++][jogadores[recebido.client_id].posX] == 0 && recebido.status == MESSAGE_OK)
   {
     while ((*Mudanca) == DIREITA && cenario[jogadores[recebido.client_id].posY++][jogadores[recebido.client_id].posX++] == 0)
@@ -55,13 +55,41 @@ void cair(char cenario[][], Jogador jogadores[], msg_recebida recebido, char *Mu
   }
 }
 
+void pular(char cenario[][224], Jogador jogadores[], msg_recebida recebido, char *Mudanca){
+    char blocos = 2;
+    while(blocos--){
+        recebido = recvMsg(Mudanca);
+    if (cenario[jogadores[recebido.client_id].posY--][jogadores[recebido.client_id].posX] == 0 && recebido.status == NO_MESSAGE)
+  {
+    jogadores[recebido.client_id].posY--;
+    broadcast((Jogador *)&jogadores[recebido.client_id], sizeof(Jogador));
+  }
+  //recebido = recvMsg(Mudanca);
+  if (cenario[jogadores[recebido.client_id].posY--][jogadores[recebido.client_id].posX] == 0 && recebido.status == MESSAGE_OK)
+  {
+    if ((*Mudanca) == DIREITA && cenario[jogadores[recebido.client_id].posY--][jogadores[recebido.client_id].posX++] == 0)
+    {
+      jogadores[recebido.client_id].posY--;
+      jogadores[recebido.client_id].posX++;
+      broadcast((Jogador *)&jogadores[recebido.client_id], sizeof(Jogador));
+    }
+    if ((*Mudanca) == ESQUERDA && cenario[jogadores[recebido.client_id].posY--][jogadores[recebido.client_id].posX--] == 0)
+    {
+      jogadores[recebido.client_id].posY--;
+      jogadores[recebido.client_id].posX--;
+      broadcast((Jogador *)&jogadores[recebido.client_id], sizeof(Jogador));
+    }
+  }
+    }
+}
+
 void ligaServidor()
 {
   char cenario[][224] = {};
   char str_buffer[BUFFER_SIZE], aux_buffer[BUFFER_SIZE];
-  Jogador jogadores[3];
-  char nicknames[3][LOGIN_MAX_SIZE];
-  char skins[3];
+  Jogador jogadores[4];
+  char nicknames[4][LOGIN_MAX_SIZE];
+  char skins[4];
   char estadodoserver = ESPERANDO;
   char qtd_players = 0;
   puts("meuuuuuuuu o joguinho nao kitou k k k k\n");
@@ -102,8 +130,6 @@ void ligaServidor()
         printf("%s se conectou com id = %d e escolheu o personagem %d \n qtd_players=%d\n", nicknames[id], id, skins[id], qtd_players);
         jogadores[id].estado = VACUO;
         jogadores[id].ID = id;
-        jogadores[id].vida = 100;
-        jogadores[id].estamina = 100;
         jogadores[id].posX = ; //onde o jogador inicia!!
         jogadores[id].posY = ;
         jogadores[id].mortes = 0;
@@ -116,7 +142,7 @@ void ligaServidor()
       if (qtd_players == 3)
       {
         estadodoserver = EM_JOGO;
-        broadcast((char *)&EM_JOGO, 1);
+        broadcast((int *)&EM_JOGO, 1);
       }
     }
     char Mudanca;
@@ -134,25 +160,8 @@ void ligaServidor()
           jogadores[recebido.client_id].estado = POSICAO;
           //mostra qual imagem sera mostrada do personagem
           jogadores[recebido.client_id].face = PULO;
-          //condicional para ver se haverá conflito com blocos no pulo pra cima
-          if (jogadores[recebido.client_id].posY - 1 >= 0 && jogadores[recebido.client_id].posY - 2 >= 0 && cenario[jogadores[recebido.client_id].posY - 1][jogadores[recebido.client_id].posX] == 0 && cenario[jogadores[recebido.client_id].posY - 2][jogadores[recebido.client_id].posX] == 0)
-          {
-            jogadores[recebido.client_id].posY -= 2;
-          }
-          //validação de POSICAO
-          if (cenario[jogadores[recebido.client_id].posY++][jogadores[recebido.client_id].posX] != 1)
-          {
-            if (cenario[jogadores[recebido.client_id].posY + 2][jogadores[recebido.client_id].posX])
-            {
-              jogadores[recebido.client_id].posY--;
-            }
-          }
-          //gravidade
-          while (cenario[jogadores[recebido.client_id].posY + 1][jogadores[recebido.client_id].posX] != 1)
-          {
-            jogadores[recebido.client_id].posY++;
-          }
-          //atualiza a tela
+          pular(cenario, jogadores, recebido, &Mudanca);
+          cair(cenario, jogadores, recebido, &Mudanca);
           broadcast((Jogador *)&jogadores[recebido.client_id], sizeof(Jogador));
         }
         else if (Mudanca == DIREITA)
