@@ -27,25 +27,25 @@ enum estado_do_server
   FIM_DE_JOGO
 };
 
-void cair(char cenario[][224], Jogador jogadores[], msg_recebida recebido, char *Mudanca)
+int cair(char cenario[][224], Jogador jogadores[], msg_recebida recebido, char *Mudanca)
 { //gravidade que nao sei fazer porem tentei
-  while (cenario[jogadores[recebido.client_id].posY++][jogadores[recebido.client_id].posX] == 0 && recebido.status == NO_MESSAGE)
+  while (cenario[jogadores[recebido.client_id].posY+1][jogadores[recebido.client_id].posX] == 0 && recebido.status == NO_MESSAGE)
   {
     jogadores[recebido.client_id].posY++;
     broadcast((Jogador *)&jogadores[recebido.client_id], sizeof(Jogador));
     recebido = recvMsg(Mudanca);
   }
   //recebido = recvMsg(Mudanca);
-  while (cenario[jogadores[recebido.client_id].posY++][jogadores[recebido.client_id].posX] == 0 && recebido.status == MESSAGE_OK)
+  while (cenario[jogadores[recebido.client_id].posY+1][jogadores[recebido.client_id].posX] == 0 && recebido.status == MESSAGE_OK)
   {
-    while ((*Mudanca) == DIREITA && cenario[jogadores[recebido.client_id].posY++][jogadores[recebido.client_id].posX++] == 0)
+    while ((*Mudanca) == DIREITA && cenario[jogadores[recebido.client_id].posY+1][jogadores[recebido.client_id].posX+1] == 0)
     {
       jogadores[recebido.client_id].posY++;
       jogadores[recebido.client_id].posX++;
       broadcast((Jogador *)&jogadores[recebido.client_id], sizeof(Jogador));
       recebido = recvMsg(Mudanca);
     }
-    while ((*Mudanca) == ESQUERDA && cenario[jogadores[recebido.client_id].posY++][jogadores[recebido.client_id].posX--] == 0)
+    while ((*Mudanca) == ESQUERDA && cenario[jogadores[recebido.client_id].posY+1][jogadores[recebido.client_id].posX-1] == 0)
     {
       jogadores[recebido.client_id].posY++;
       jogadores[recebido.client_id].posX--;
@@ -53,27 +53,29 @@ void cair(char cenario[][224], Jogador jogadores[], msg_recebida recebido, char 
       recebido = recvMsg(Mudanca);
     }
   }
+    //funcao morri
+
 }
 
 void pular(char cenario[][224], Jogador jogadores[], msg_recebida recebido, char *Mudanca){
     char blocos = 2;
     while(blocos--){
         recebido = recvMsg(Mudanca);
-    if (cenario[jogadores[recebido.client_id].posY--][jogadores[recebido.client_id].posX] == 0 && recebido.status == NO_MESSAGE)
+    if (cenario[jogadores[recebido.client_id].posY-1][jogadores[recebido.client_id].posX] == 0 && recebido.status == NO_MESSAGE)
   {
     jogadores[recebido.client_id].posY--;
     broadcast((Jogador *)&jogadores[recebido.client_id], sizeof(Jogador));
   }
   //recebido = recvMsg(Mudanca);
-  if (cenario[jogadores[recebido.client_id].posY--][jogadores[recebido.client_id].posX] == 0 && recebido.status == MESSAGE_OK)
+  if (cenario[jogadores[recebido.client_id].posY-1][jogadores[recebido.client_id].posX] == 0 && recebido.status == MESSAGE_OK)
   {
-    if ((*Mudanca) == DIREITA && cenario[jogadores[recebido.client_id].posY--][jogadores[recebido.client_id].posX++] == 0)
+    if ((*Mudanca) == DIREITA && cenario[jogadores[recebido.client_id].posY-1][jogadores[recebido.client_id].posX+1] == 0)
     {
       jogadores[recebido.client_id].posY--;
       jogadores[recebido.client_id].posX++;
       broadcast((Jogador *)&jogadores[recebido.client_id], sizeof(Jogador));
     }
-    if ((*Mudanca) == ESQUERDA && cenario[jogadores[recebido.client_id].posY--][jogadores[recebido.client_id].posX--] == 0)
+    if ((*Mudanca) == ESQUERDA && cenario[jogadores[recebido.client_id].posY-1][jogadores[recebido.client_id].posX-1] == 0)
     {
       jogadores[recebido.client_id].posY--;
       jogadores[recebido.client_id].posX--;
@@ -168,11 +170,11 @@ void ligaServidor()
         {
           jogadores[recebido.client_id].estado = POSICAO;
           jogadores[recebido.client_id].face = FRENTE;
-          if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX++] == 0)
+          if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX+1] == 0)
           {
-            if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX--] == FOLHA)
+            if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX-1] == FOLHA)
             {
-              cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX--] = 0;
+              cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX-1] = 0;
               if (jogadores[recebido.client_id].folhas < 4)
               {
                 jogadores[recebido.client_id].folhas++;
@@ -182,9 +184,9 @@ void ligaServidor()
                 }
               }
             }
-            else if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX--] == FLOR)
+            else if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX-1] == FLOR)
             {
-              cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX--] = 0;
+              cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX-1] = 0;
               if (jogadores[recebido.client_id].flores < 4)
               {
                 jogadores[recebido.client_id].flores++;
@@ -194,9 +196,9 @@ void ligaServidor()
                 }
               }
             }
-            else if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX--] == CAFE)
+            else if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX-1] == CAFE)
             {
-              cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX--] = 0;
+              cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX-1] = 0;
               if (jogadores[recebido.client_id].cafe < 4)
               {
                 jogadores[recebido.client_id].cafe++;
@@ -206,9 +208,9 @@ void ligaServidor()
                 }
               }
             }
-            else if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX--] == AGUA)
+            else if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX-1] == AGUA)
             {
-              cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX--] = 0;
+              cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX-1] = 0;
               if (jogadores[recebido.client_id].agua < 4)
               {
                 jogadores[recebido.client_id].agua++;
@@ -231,11 +233,11 @@ void ligaServidor()
         {
           jogadores[recebido.client_id].estado = POSICAO;
           jogadores[recebido.client_id].face = TRAS;
-          if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX--] != 1)
+          if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX-1] != 1)
           {
-            if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX--] == FOLHA)
+            if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX-1] == FOLHA)
             {
-              cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX--] = 0;
+              cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX-1] = 0;
               if (jogadores[recebido.client_id].folhas < 4)
               {
                 jogadores[recebido.client_id].folhas++;
@@ -245,9 +247,9 @@ void ligaServidor()
                 }
               }
             }
-            else if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX--] == FLOR)
+            else if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX-1] == FLOR)
             {
-              cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX--] = 0;
+              cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX-1] = 0;
               if (jogadores[recebido.client_id].flores < 4)
               {
                 jogadores[recebido.client_id].flores++;
@@ -257,9 +259,9 @@ void ligaServidor()
                 }
               }
             }
-            else if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX--] == CAFE)
+            else if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX-1] == CAFE)
             {
-              cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX--] = 0;
+              cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX-1] = 0;
               if (jogadores[recebido.client_id].cafe < 4)
               {
                 jogadores[recebido.client_id].cafe++;
@@ -269,9 +271,9 @@ void ligaServidor()
                 }
               }
             }
-            else if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX--] == AGUA)
+            else if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX-1] == AGUA)
             {
-              cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX--] = 0;
+              cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX-1] = 0;
               if (jogadores[recebido.client_id].agua < 4)
               {
                 jogadores[recebido.client_id].agua++;
