@@ -1,8 +1,3 @@
-#include <allegro5/allegro.h>
-#include <allegro5/allegro_image.h>
-#include <allegro5/allegro_primitives.h>
-#include <allegro5/allegro_font.h>
-#include <allegro5/allegro_ttf.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <math.h>
@@ -27,13 +22,13 @@ enum estado_do_server
   FIM_DE_JOGO
 };
 
-void morri(Jogador jogadores[], struct msg_ret_t recebido){
+void morri(Jogador jogadores[], struct msg_ret_t recebido)
+{
   //jogadores[recebido.client_id].mortes++;
   jogadores[recebido.client_id].posX = 1;
-  jogadores[recebido.client_id].posY = 21;//mudar
-  jogadores[recebido.client_id].score=0;
+  jogadores[recebido.client_id].posY = 21; //mudar
+  jogadores[recebido.client_id].score = 0;
 }
-
 
 void cair(char cenario[][224], Jogador jogadores[], struct msg_ret_t recebido, char *Mudanca)
 { //gravidade que nao sei fazer porem tentei
@@ -97,13 +92,15 @@ void pular(char cenario[][224], Jogador jogadores[], struct msg_ret_t recebido, 
   }
 }
 
-void ganhei_Coracao(Jogador jogadores[], struct msg_ret_t recebido){
-    jogadores[recebido.client_id].coracao = COM_CORACAO;
-    jogadores[recebido.client_id].score+=200;
+void ganhei_Coracao(Jogador jogadores[], struct msg_ret_t recebido)
+{
+  jogadores[recebido.client_id].coracao = COM_CORACAO;
+  jogadores[recebido.client_id].score += 200;
 }
 
-void testandoServidor(Jogador jogadores, struct msg_ret_t recebido){
-    printf("\nPosicao = [%d,%d]\nCoracao = %d\n Score = %d\n", jogadores[recebido.client_id].posX, jogadores[recebido.client_id].posY, jogadores[recebido.client_id].coracao, jogadores[recebido.client_id].score);
+void testandoServidor(Jogador jogadores[], struct msg_ret_t recebido)
+{
+  printf("\nPosicao = [%d,%d]\nCoracao = %d\n Score = %d\n", jogadores[recebido.client_id].posX, jogadores[recebido.client_id].posY, jogadores[recebido.client_id].coracao, jogadores[recebido.client_id].score);
 }
 
 void ligaServidor()
@@ -160,22 +157,24 @@ void ligaServidor()
         sendMsgToClient((Jogador *)&jogadores[id], sizeof(Jogador), id);
       }
       struct msg_ret_t MensagemRecebida = recvMsg(aux_buffer);
-      if(MensagemRecebida.status == DISCONNECT_MSG){
-                --qtd_players;
-                printf("%s disconnected id: %d is free\n",nicknames[MensagemRecebida.client_id], MensagemRecebida.client_id);
-                printf("players_connected: %d\n",players_connected);
-            }
-      if (qtd_players ==3)
+      if (MensagemRecebida.status == DISCONNECT_MSG)
+      {
+        --qtd_players;
+        printf("%s disconnected id: %d is free\n", nicknames[MensagemRecebida.client_id], MensagemRecebida.client_id);
+        printf("players_connected: %d\n", qtd_players);
+      }
+      if (qtd_players == 3)
       {
         estadodoserver = EM_JOGO;
-        broadcast((int *)&EM_JOGO, 1);
+        broadcast(&estadodoserver, 1);
       }
     }
     char Mudanca;
     puts("Rodando");
+    struct msg_ret_t recebido;
     while (estadodoserver == EM_JOGO)
     {
-      struct msg_ret_t recebido = recvMsg(&Mudanca);
+      recebido = recvMsg(&Mudanca);
       if (recebido.status == MESSAGE_OK)
       {
         cenario[jogadores[0].posX][jogadores[0].posY] = 0;
@@ -196,46 +195,47 @@ void ligaServidor()
           jogadores[recebido.client_id].face = FRENTE;
           if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX + 1] == 0)
           {
-            if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX - 1] == FOLHA)//folha vale 
+            if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX - 1] == FOLHA) //folha vale
             {
               cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX - 1] = 0;
-                jogadores[recebido.client_id].score+=50;
-                if (jogadores[recebido.client_id].score >= 200 && jogadores[recebido.client_id].coracao == SEM_CORACAO)
-                {
-                  ganhei_Coracao(jogadores, recebido);
-                }
+              jogadores[recebido.client_id].score += 50;
+              if (jogadores[recebido.client_id].score >= 200 && jogadores[recebido.client_id].coracao == SEM_CORACAO)
+              {
+                ganhei_Coracao(jogadores, recebido);
+              }
             }
             else if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX - 1] == FLOR)
             {
               cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX - 1] = 0;
-                jogadores[recebido.client_id].score+=50;
-                if (jogadores[recebido.client_id].score >= 200 && jogadores[recebido.client_id].coracao == SEM_CORACAO)
-                {
-                  ganhei_Coracao(jogadores, recebido);
-                }
+              jogadores[recebido.client_id].score += 50;
+              if (jogadores[recebido.client_id].score >= 200 && jogadores[recebido.client_id].coracao == SEM_CORACAO)
+              {
+                ganhei_Coracao(jogadores, recebido);
+              }
             }
             else if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX - 1] == CAFE)
             {
               cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX - 1] = 0;
-                jogadores[recebido.client_id].score+=50;
-                if (jogadores[recebido.client_id].score == 200 && jogadores[recebido.client_id].coracao == SEM_CORACAO)
-                {
-                  ganhei_Coracao(jogadores, recebido);                
-                  }
+              jogadores[recebido.client_id].score += 50;
+              if (jogadores[recebido.client_id].score == 200 && jogadores[recebido.client_id].coracao == SEM_CORACAO)
+              {
+                ganhei_Coracao(jogadores, recebido);
+              }
             }
             else if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX - 1] == AGUA)
             {
               cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX - 1] = 0;
-                jogadores[recebido.client_id].score+=50;
-                if (jogadores[recebido.client_id].score == 200 && jogadores[recebido.client_id].coracao == SEM_CORACAO)
-                {
-                  ganhei_Coracao(jogadores, recebido);             
-                   }
+              jogadores[recebido.client_id].score += 50;
+              if (jogadores[recebido.client_id].score == 200 && jogadores[recebido.client_id].coracao == SEM_CORACAO)
+              {
+                ganhei_Coracao(jogadores, recebido);
+              }
             }
             jogadores[recebido.client_id].posX++;
 
             broadcast((Jogador *)&jogadores[recebido.client_id], sizeof(Jogador));
-            if (cenario[jogadores[recebido.client_id].posY+1][jogadores[recebido.client_id].posX] == 0);
+            if (cenario[jogadores[recebido.client_id].posY + 1][jogadores[recebido.client_id].posX] == 0)
+              ;
             {
               cair(cenario, jogadores, recebido, &Mudanca);
             }
@@ -250,49 +250,47 @@ void ligaServidor()
             if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX - 1] == FOLHA)
             {
               cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX - 1] = 0;
-                jogadores[recebido.client_id].score+=50;
-                if (jogadores[recebido.client_id].score >= 200 && jogadores[recebido.client_id].coracao == SEM_CORACAO)
-                {
-                  ganhei_Coracao(jogadores, recebido);
-                                 }
+              jogadores[recebido.client_id].score += 50;
+              if (jogadores[recebido.client_id].score >= 200 && jogadores[recebido.client_id].coracao == SEM_CORACAO)
+              {
+                ganhei_Coracao(jogadores, recebido);
               }
-            }
-            else if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX - 1] == FLOR)
-            {
-              cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX - 1] = 0;
-                jogadores[recebido.client_id].score+=50;
-                if (jogadores[recebido.client_id].score >= 200 && jogadores[recebido.client_id].coracao == SEM_CORACAO)
-                {
-                  ganhei_Coracao(jogadores, recebido);
-                }
-              }
-            }
-            else if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX - 1] == CAFE)
-            {
-              cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX - 1] = 0;
-                jogadores[recebido.client_id].score+=50;
-                if (jogadores[recebido.client_id].score >= 200 && jogadores[recebido.client_id].coracao == SEM_CORACAO)
-                {
-                  ganhei_Coracao(jogadores, recebido);                }
-              }
-            }
-            else if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX - 1] == AGUA)
-            {
-              cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX - 1] = 0;
-                jogadores[recebido.client_id].score+=50;
-                if (jogadores[recebido.client_id].score >= 200 && jogadores[recebido.client_id].coracao == SEM_CORACAO)
-                {
-                  ganhei_Coracao(jogadores, recebido);              }
-              }
-            }
-            jogadores[recebido.client_id].posX--;
-            //parte da gravidade
-            broadcast((Jogador *)&jogadores[recebido.client_id], sizeof(Jogador));
-            if (cenario[jogadores[recebido.client_id].posY+1][jogadores[recebido.client_id].posX] == 0)
-            {
-              cair(cenario, jogadores, recebido, &Mudanca);
             }
           }
+          else if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX - 1] == FLOR)
+          {
+            cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX - 1] = 0;
+            jogadores[recebido.client_id].score += 50;
+            if (jogadores[recebido.client_id].score >= 200 && jogadores[recebido.client_id].coracao == SEM_CORACAO)
+            {
+              ganhei_Coracao(jogadores, recebido);
+            }
+          }
+        }
+        else if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX - 1] == CAFE)
+        {
+          cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX - 1] = 0;
+          jogadores[recebido.client_id].score += 50;
+          if (jogadores[recebido.client_id].score >= 200 && jogadores[recebido.client_id].coracao == SEM_CORACAO)
+          {
+            ganhei_Coracao(jogadores, recebido);
+          }
+        }
+        else if (cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX - 1] == AGUA)
+        {
+          cenario[jogadores[recebido.client_id].posY][jogadores[recebido.client_id].posX - 1] = 0;
+          jogadores[recebido.client_id].score += 50;
+          if (jogadores[recebido.client_id].score >= 200 && jogadores[recebido.client_id].coracao == SEM_CORACAO)
+          {
+            ganhei_Coracao(jogadores, recebido);
+          }
+        }
+        jogadores[recebido.client_id].posX--;
+        //parte da gravidade
+        broadcast((Jogador *)&jogadores[recebido.client_id], sizeof(Jogador));
+        if (cenario[jogadores[recebido.client_id].posY + 1][jogadores[recebido.client_id].posX] == 0)
+        {
+          cair(cenario, jogadores, recebido, &Mudanca);
         }
       }
       testandoServidor(jogadores, recebido);
@@ -319,4 +317,3 @@ int main()
                 if(players_connected == 0) serverState = ENDGAME;
             }
 */
- 
