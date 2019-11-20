@@ -14,8 +14,8 @@ server_view_client *connected_clients = NULL;  // saves sockid for each client
 fd_set server_fd_set, active_fd_set;
 int server_sock;  // server socket id
 
-msg_recebida make_msg_ret(int status, int client_id, int size) {
-  msg_recebida ret = {status, client_id, size};
+struct msg_ret_t make_msg_ret(int status, int client_id, int size) {
+  struct msg_ret_t ret = {status, client_id, size};
   return ret;
 }
 
@@ -172,7 +172,7 @@ Return:
     id and return.size is the size of the message in bytes
 */
 
-msg_recebida recvMsg(void *msg) {
+struct msg_ret_t recvMsg(void *msg) {
   struct timeval timeout = {0, SELECT_TIMEOUT};
   fd_set readfds = active_fd_set;
   int sel_ret = select(FD_SETSIZE, &readfds, NULL, NULL, &timeout);
@@ -208,7 +208,7 @@ NO_MESSAGE
   otherwise return.status is MESSAGE_OK  and return.size is the size of the
 message in bytes
 */
-msg_recebida recvMsgFromClient(void *msg, int client_id, int option) {
+struct msg_ret_t recvMsgFromClient(void *msg, int client_id, int option) {
   if (!isValidId(client_id)) {
     return make_msg_ret(NOT_VALID_CLIENT_ID, -1, 0);
   }
