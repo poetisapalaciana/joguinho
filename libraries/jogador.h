@@ -35,10 +35,7 @@ enum flag{
 
 enum coracoes{
     SEM_CORACAO,
-    INVERNO,
-    VERAO,
-    OUTONO,
-    PRIMAVERA
+    COM_CORACAO
 };
 
 enum itens{
@@ -50,6 +47,7 @@ enum itens{
 
 //struct do jogador
 typedef struct{
-    unsigned char ID, vida, estamina, coracao, mortes, flores, folhas, cafe, agua, posX, posY, estado, face;
+    unsigned char ID, posX, coracao, posY, estado, face;
+    int score;
 }Jogador;
 
